@@ -4,16 +4,11 @@
 
 This program is used to save/restore/align the Ubuntu and Mint Desktop icons
 positions when Nautilus, Nemo, or Caja is managing the desktop.
-This has been tested with:  
-    Ubuntu 14.04 with Nautilus  
-    Ubuntu 16.04 with Nautilus  
-    Mint 18.1 Cinnamon with Nemo  
-    Mint 18.2 Cinnamon with Nemo  
-    Mint 18.2 Mate with Caja  
-    Mint 19.3 Mate with Caja
+This version has been tested with:  
+    Mint 22.1 Mate with Caja
        
 Requirements:  
-    gvfs-info which is used by Nautilus, Nemo & Caja to store icon positions  
+    gio which is used by Nautilus, Nemo & Caja to store icon positions  
     Nautilus or Nemo or Caja is your file manager  
     bash, zenity, gsettings, xprop, sed, grep  
 

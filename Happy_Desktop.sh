@@ -1,6 +1,7 @@
 #!/bin/bash
 # 
 #   copyright © 2017 retiredbutstillhavingfun
+#   copyright © 2025 owmaker
 #
 #   Happy Desktop
 #   Version 2.00
@@ -11,15 +12,11 @@
 #### Program Requirements: #####
 #  This program is used to save/restore/align the Ubuntu and Mint Desktop icons
 #  positions when Nautilus, Nemo, or Caja is managing the desktop.
-#  This has been tested with
-#     Ubuntu 14.04 with Nautilus
-#     Ubuntu 16.04 with Nautilus
-#     Mint 18.1 Cinnamon with Nemo
-#     Mint 18.2 Cinnamon with Nemo
-#     Mint 18.2 Mate with Caja
+#  This version has been tested with
+#     Mint 22.1 Mate with Caja
 #	
 #   Requirements:
-#     gvfs-info which is used by Nautilus, Nemo & Caja to store icon positions
+#     gio which is used by Nautilus, Nemo & Caja to store icon positions
 #     Nautilus or Nemo or Caja is your file manager
 #     bash, zenity, gsettings, xprop, sed, grep
 #
@@ -174,7 +171,7 @@ while read -r line; do
 				tmp="$tmp\\n$icon_name|$x_pos|$y_pos|||$prefix_str"
 			fi;;
 	esac
-done < <(gvfs-info "$desktop_path"/* | grep -E 'standard::name:|icon-position:')
+done < <(gio info "$desktop_path"/* | grep -E 'standard::name:|icon-position:')
 echo -e "$tmp" | sed '/^\s*$/d' | sort -t\| -k2g,2 -k3g,3
 unset IFS
 }
@@ -194,7 +191,7 @@ local prefix_str
 local tmp=''
 IFS='|'
 while read -r icon_name x_pos y_pos col row prefix_str; do
-	tmp="$tmp"'\ngvfs-set-attribute '\'"$desktop_path/$icon_name"\'" $prefix_str $x_pos,$y_pos"
+	tmp="$tmp"'\ngio set '\'"$desktop_path/$icon_name"\'" $prefix_str $x_pos,$y_pos"
 done < <(echo -e "$1")
 unset IFS
 echo -e "$tmp" | sed '/^\s*$/d' > "$2"
@@ -365,7 +362,7 @@ local overlapped
 local undo_entry=()
 local disintangle_entry=()
 if [ "$undo_enabled" -eq 0 ]; then undo_entry=("${undo_entry[@]}" "Undo Last Operation" "${lang[main8]}"); fi
-overlapped=$(gvfs-info "$desktop_path"/* | sed '/metadata::'"$my_desktop_manager"'-icon-position:/!d' | sort | uniq -d)
+overlapped=$(gio info "$desktop_path"/* | sed '/metadata::'"$my_desktop_manager"'-icon-position:/!d' | sort | uniq -d)
 if [ -n "$overlapped" ]; then disintangle_entry=("${disintangle_entry[@]}" "Separate Overlapping Icons" "${lang[main9]}"); fi
 zenity --list \
 	--title="    $title_text" \
@@ -641,7 +638,7 @@ get_desktop_manager ()
 {
 local d_man
 local cnt
-d_man=$(gvfs-info "$desktop_path"/* | grep -E 'icon-position:' | awk -F':' '{print $3}' | sed 's/\-icon-position//' | sort | uniq)
+d_man=$(gio info "$desktop_path"/* | grep -E 'icon-position:' | awk -F':' '{print $3}' | sed 's/\-icon-position//' | sort | uniq)
 [ -n "$d_man" ] || { zenity --warning --no-wrap --text="${lang[msg27]}\\n\\n ... ${lang[msg18]}"; exit 1; }
 cnt=$(echo "$d_man" | wc -l)
 # if more than one desktop manager found, then use the distro to determine
@@ -796,7 +793,7 @@ unset IFS
 
 # arguments
 # $1 = icon_data
-# $2 change type ='to_grid'|'left_margin'|'top_margin'|'grid_width'|'grid_height|'separate'
+# $2 change type ='to_grid'|'left_margin'|'top_margin'|'grid_width'|'grid_height'|'separate'
 # $3 = amount of change|old_value
 convert_data ()
 {
@@ -885,7 +882,7 @@ if [ ! "$language" == 'English' ]; then language_config "$language"; fi
 
 
 #check if gvfs-info is installed
-command -v gvfs-info >/dev/null 2>&1 || { zenity --warning --no-wrap --text="\\ngvfs-info is required to obtain\\nicon positions but is not installed.\\n\\n ...${lang[msg18]}"; exit 1; }
+command -v gio info >/dev/null 2>&1 || { zenity --warning --no-wrap --text="\\ngvfs-info is required to obtain\\nicon positions but is not installed.\\n\\n ...${lang[msg18]}"; exit 1; }
 
 # create tmp directory if it does not exist
 if [ ! -d "/var/tmp/Desktop" ]; then mkdir /var/tmp/Desktop; fi
